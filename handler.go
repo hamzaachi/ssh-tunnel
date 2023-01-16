@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"errors"
 	"os"
 	"os/exec"
@@ -21,6 +22,7 @@ type Service struct {
 	DistPort  string
 	IP        string
 	SSHServer string
+	db        *sql.DB
 }
 
 func New(name string, app config.App) *Service {
