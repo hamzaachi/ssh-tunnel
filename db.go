@@ -117,3 +117,31 @@ func (con *Service) List() ([]Recod, error) {
 
 	return l, nil
 }
+
+func (con *Service) GetPorts() ([]int, error) {
+
+	stm, err := con.db.Prepare("SELECT localport FROM channels;")
+	if err != nil {
+		return nil, err
+	}
+
+	defer stm.Close()
+
+	rows, err := stm.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var l []int
+	for rows.Next() {
+		r := Recod{}
+		err := rows.Scan(&r.Port)
+		if err != nil {
+			return nil, err
+		}
+		l = append(l, r.Port)
+	}
+
+	return l, nil
+}

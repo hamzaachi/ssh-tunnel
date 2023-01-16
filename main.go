@@ -33,7 +33,7 @@ func main() {
 
 	}
 
-	List, err := service.RetrieveByName("invpest")
+	List, err := service.GetPorts()
 	if err != nil {
 		panic(err)
 	}
