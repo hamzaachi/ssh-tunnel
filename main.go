@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"scm.eadn.dz/DevOps/ssh_tunneling/config"
 )
@@ -33,10 +32,10 @@ func main() {
 
 	}
 
-	List, err := service.GetPorts()
+	List, err := service.List()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(List)
+	Display(List)
 }

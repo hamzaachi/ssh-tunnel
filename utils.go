@@ -47,6 +47,7 @@ func Display(output []Recod) {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Id", "Name", "Type", "Port"})
+
 	for _, item := range output {
 		t.AppendRow([]interface{}{item.ID, item.Name, item.Type, item.Port})
 		t.AppendSeparator()
