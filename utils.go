@@ -2,10 +2,13 @@ package main
 
 import (
 	"math/rand"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 const MinPort = 1000
@@ -38,4 +41,15 @@ func GetRandomNumber() string {
 	rand.Seed(time.Now().UnixNano())
 
 	return strconv.Itoa(rand.Intn(MaxPort-MinPort+1) + MinPort)
+}
+
+func Display(output []Recod) {
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Id", "Name", "Type", "Port"})
+	for _, item := range output {
+		t.AppendRow([]interface{}{item.ID, item.Name, item.Type, item.Port})
+		t.AppendSeparator()
+	}
+	t.Render()
 }
