@@ -46,28 +46,28 @@ func New(name string, app config.App) *Tunnel {
 	return &s
 }
 
-func (service *Tunnel) CreateSystemdService() error {
-	Filename := "/etc/systemd/system/ssh-tunnel-" + service.Name + "-" + service.Category + ".service"
+func (sshTunnel *Tunnel) CreateSystemdService() error {
+	Filename := "/etc/systemd/system/ssh-tunnel-" + sshTunnel.Name + "-" + sshTunnel.Category + ".service"
 	f, err := os.Create(Filename)
 	if err != nil {
 		return err
 	}
 
 	temp := template.Must(template.ParseFiles("templates/ssh-tunnel.service"))
-	err = temp.Execute(f, service)
+	err = temp.Execute(f, sshTunnel)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (service *Tunnel) StartSSHTunnel() error {
-	err := service.CreateSystemdService()
+func (sshTunnel *Tunnel) StartSSHTunnel() error {
+	err := sshTunnel.CreateSystemdService()
 	if err != nil {
 		return err
 	}
 
-	systemdService := "ssh-tunnel-" + service.Name + "-" + service.Category + ".service"
+	systemdService := "ssh-tunnel-" + sshTunnel.Name + "-" + sshTunnel.Category + ".service"
 	cmd := exec.Command("systemctl", "start", systemdService)
 	err = cmd.Run()
 	if err != nil {
@@ -76,14 +76,14 @@ func (service *Tunnel) StartSSHTunnel() error {
 
 	time.Sleep(3 * time.Second)
 
-	if CheckPortStatus("127.0.0.1", service.LocalPort) {
+	if CheckPortStatus("127.0.0.1", sshTunnel.LocalPort) {
 		cmd = exec.Command("systemctl", "enable", systemdService)
 		err = cmd.Run()
 		if err != nil {
 			return err
 		}
 
-		FirewallRule := "allow from " + VPNSubnet + " to " + ServerIP + " proto tcp port" + " " + service.LocalPort
+		FirewallRule := "allow from " + VPNSubnet + " to " + ServerIP + " proto tcp port" + " " + sshTunnel.LocalPort
 		err = AddFirewallRule(FirewallRule)
 		if err != nil {
 			return err
