@@ -15,7 +15,7 @@ import (
 const VPNSubnet = "10.10.10.0/24"
 const ServerIP = "10.1.0.100"
 
-type Service struct {
+type Tunnel struct {
 	Name      string
 	Category  string
 	LocalPort string
@@ -25,8 +25,8 @@ type Service struct {
 	db        *sql.DB
 }
 
-func New(name string, app config.App) *Service {
-	s := Service{}
+func New(name string, app config.App) *Tunnel {
+	s := Tunnel{}
 	s.Name = name
 	s.SSHServer = app.Shh
 
@@ -46,7 +46,7 @@ func New(name string, app config.App) *Service {
 	return &s
 }
 
-func (service *Service) CreateSystemdService() error {
+func (service *Tunnel) CreateSystemdService() error {
 	Filename := "/etc/systemd/system/ssh-tunnel-" + service.Name + "-" + service.Category + ".service"
 	f, err := os.Create(Filename)
 	if err != nil {
@@ -61,7 +61,7 @@ func (service *Service) CreateSystemdService() error {
 	return nil
 }
 
-func (service *Service) StartSSHTunnel() error {
+func (service *Tunnel) StartSSHTunnel() error {
 	err := service.CreateSystemdService()
 	if err != nil {
 		return err

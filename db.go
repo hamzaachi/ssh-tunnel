@@ -27,7 +27,7 @@ func connect(ctx context.Context) (*sql.DB, error) {
 
 }
 
-func (con *Service) Insert() error {
+func (con *Tunnel) Insert() error {
 
 	stm, err := con.db.Prepare("INSERT INTO channels(name, type, localport) VALUES(?,?,?)")
 	if err != nil {
@@ -45,24 +45,26 @@ func (con *Service) Insert() error {
 	return nil
 }
 
-func (con *Service) RetrieveByID(id int) (*Recod, error) {
+func (con *Tunnel) RetrieveByID(Name, Type string) ([]Recod, error) {
 	r := Recod{}
 
-	stm, err := con.db.Prepare("SELECT * FROM channels WHERE id = ?")
+	stm, err := con.db.Prepare("SELECT * FROM channels WHERE name = ? AND type = ?")
 	if err != nil {
 		return nil, err
 	}
 
 	defer stm.Close()
 
-	if err = stm.QueryRow(id).Scan(&r.ID, &r.Name, &r.Type, &r.Port); err == sql.ErrNoRows {
-		return nil, sql.ErrNoRows
+	l := []Recod{}
+	if err = stm.QueryRow(Name, Type).Scan(&r.ID, &r.Name, &r.Type, &r.Port); err == sql.ErrNoRows {
+		return l, nil
 	}
 
-	return &r, nil
+	l = append(l, r)
+	return l, nil
 }
 
-func (con *Service) RetrieveByName(name string) ([]Recod, error) {
+func (con *Tunnel) RetrieveByName(name string) ([]Recod, error) {
 
 	stm, err := con.db.Prepare("SELECT * FROM channels WHERE name = ?")
 	if err != nil {
@@ -90,7 +92,7 @@ func (con *Service) RetrieveByName(name string) ([]Recod, error) {
 	return l, nil
 }
 
-func (con *Service) List() ([]Recod, error) {
+func (con *Tunnel) List() ([]Recod, error) {
 
 	stm, err := con.db.Prepare("SELECT * FROM channels;")
 	if err != nil {
@@ -118,7 +120,7 @@ func (con *Service) List() ([]Recod, error) {
 	return l, nil
 }
 
-func (con *Service) GetPorts() ([]int, error) {
+func (con *Tunnel) GetPorts() ([]int, error) {
 
 	stm, err := con.db.Prepare("SELECT localport FROM channels;")
 	if err != nil {

@@ -21,10 +21,10 @@ func main() {
 
 	defer db.Close()
 
-	var service *Service
+	var sshTunnel *Tunnel
 	for key, value := range config.Apps {
-		service = New(key, value)
-		service.db = db
+		sshTunnel = New(key, value)
+		sshTunnel.db = db
 		//err = service.StartSSHTunnel()
 		//if err != nil {
 		//	panic(err)
@@ -32,7 +32,7 @@ func main() {
 
 	}
 
-	List, err := service.List()
+	List, err := sshTunnel.RetrieveByID("invest", "bdd5")
 	if err != nil {
 		panic(err)
 	}
