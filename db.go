@@ -45,6 +45,24 @@ func (con *Tunnel) Insert() error {
 	return nil
 }
 
+func (con *Tunnel) Delete(Name, Type string) error {
+
+	stm, err := con.db.Prepare("DELETE FROM channels WHERE name = ? AND type = ?")
+	if err != nil {
+		return err
+	}
+
+	defer stm.Close()
+
+	_, err = stm.Exec(Name, Type)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (con *Tunnel) RetrieveByID(Name, Type string) ([]Recod, error) {
 	r := Recod{}
 

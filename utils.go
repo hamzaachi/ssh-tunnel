@@ -9,10 +9,13 @@ import (
 	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 )
 
-const MinPort = 1000
-const MaxPort = 5000
+const (
+	MinPort = 1000
+	MaxPort = 9000
+)
 
 func CheckPortStatus(IP, Port string) bool {
 	out, err := exec.Command("nc", "-nzv", IP, Port).CombinedOutput()
@@ -47,6 +50,7 @@ func Display(output []Recod) {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Id", "Name", "Type", "Port"})
+	t.Style().Color.Header = text.Colors{text.Bold, text.FgBlue}
 
 	for _, item := range output {
 		t.AppendRow([]interface{}{item.ID, item.Name, item.Type, item.Port})

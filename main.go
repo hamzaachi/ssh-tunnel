@@ -23,8 +23,13 @@ func main() {
 
 	var sshTunnel *Tunnel
 	for key, value := range config.Apps {
-		sshTunnel = New(key, value)
-		sshTunnel.db = db
+		sshTunnel = New(key, value, db)
+
+		err := sshTunnel.GenerateHAProxyBackend()
+		if err != nil {
+			panic(err)
+		}
+		//err := sshTunnel.Insert()
 		//err = service.StartSSHTunnel()
 		//if err != nil {
 		//	panic(err)
@@ -32,7 +37,7 @@ func main() {
 
 	}
 
-	List, err := sshTunnel.RetrieveByID("invest", "bdd5")
+	List, err := sshTunnel.List()
 	if err != nil {
 		panic(err)
 	}

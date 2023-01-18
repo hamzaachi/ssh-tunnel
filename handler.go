@@ -12,8 +12,10 @@ import (
 	"scm.eadn.dz/DevOps/ssh_tunneling/config"
 )
 
-const VPNSubnet = "10.10.10.0/24"
-const ServerIP = "10.1.0.100"
+const (
+	VPNSubnet = "10.10.10.0/24"
+	ServerIP  = "10.1.0.100"
+)
 
 type Tunnel struct {
 	Name      string
@@ -25,10 +27,11 @@ type Tunnel struct {
 	db        *sql.DB
 }
 
-func New(name string, app config.App) *Tunnel {
+func New(name string, app config.App, db *sql.DB) *Tunnel {
 	s := Tunnel{}
 	s.Name = name
 	s.SSHServer = app.Shh
+	s.db = db
 
 	if len(app.Bdd) > 0 {
 		s.Category = "bdd"
@@ -46,7 +49,7 @@ func New(name string, app config.App) *Tunnel {
 	return &s
 }
 
-func (sshTunnel *Tunnel) CreateSystemdService() error {
+func (sshTunnel *Tunnel) GenerateSystemdService() error {
 	Filename := "/etc/systemd/system/ssh-tunnel-" + sshTunnel.Name + "-" + sshTunnel.Category + ".service"
 	f, err := os.Create(Filename)
 	if err != nil {
@@ -61,8 +64,23 @@ func (sshTunnel *Tunnel) CreateSystemdService() error {
 	return nil
 }
 
+func (sshTunnel *Tunnel) GenerateHAProxyBackend() error {
+	Filename := "/etc/haproxy/conf.d/" + sshTunnel.Name + ".cfg"
+	f, err := os.Create(Filename)
+	if err != nil {
+		return err
+	}
+
+	temp := template.Must(template.ParseFiles("templates/haproxy-backend.cfg"))
+	err = temp.Execute(f, sshTunnel)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (sshTunnel *Tunnel) StartSSHTunnel() error {
-	err := sshTunnel.CreateSystemdService()
+	err := sshTunnel.GenerateSystemdService()
 	if err != nil {
 		return err
 	}
@@ -81,6 +99,13 @@ func (sshTunnel *Tunnel) StartSSHTunnel() error {
 		err = cmd.Run()
 		if err != nil {
 			return err
+		}
+
+		if sshTunnel.Category == "web" {
+			err := sshTunnel.GenerateHAProxyBackend()
+			if err != nil {
+				return err
+			}
 		}
 
 		FirewallRule := "allow from " + VPNSubnet + " to " + ServerIP + " proto tcp port" + " " + sshTunnel.LocalPort
