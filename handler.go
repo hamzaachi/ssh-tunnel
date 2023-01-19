@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -109,12 +111,59 @@ func (sshTunnel *Tunnel) StartSSHTunnel() error {
 		}
 
 		FirewallRule := "allow from " + VPNSubnet + " to " + ServerIP + " proto tcp port" + " " + sshTunnel.LocalPort
-		err = AddFirewallRule(FirewallRule)
+		err = ExecFirewallRule(FirewallRule)
 		if err != nil {
 			return err
 		}
 	} else {
 		return errors.New("Something went wrong, cannot check port")
 	}
+
+	err = sshTunnel.Insert()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (sshTunnel *Tunnel) StopSSHTunnel(Name, Type string) error {
+
+	tunnel, err := sshTunnel.RetrieveByID(Name, Type)
+	if err != nil {
+		return err
+	}
+	if len(tunnel) == 0 {
+		log.Println("SSL Tunnel does not Exist!")
+		return nil
+	}
+
+	FirewallRule := "delete allow from " + VPNSubnet + " to " + ServerIP + " proto tcp port" + " " + strconv.Itoa(tunnel[0].Port)
+	err = ExecFirewallRule(FirewallRule)
+	if err != nil {
+		return err
+	}
+
+	//This Needs Improvements...
+	systemdService := "ssh-tunnel-" + Name + "-" + Type + ".service"
+	systemdServicePath := "/etc/systemd/system/" + systemdService
+	cmd := exec.Command("systemctl", "start", systemdService)
+	err = cmd.Run()
+	cmd = exec.Command("systemctl", "disable", systemdService)
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+	cmd = exec.Command("rm", "-f", systemdServicePath)
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	err = sshTunnel.Delete(Name, Type)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

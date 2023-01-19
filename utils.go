@@ -30,7 +30,7 @@ func CheckPortStatus(IP, Port string) bool {
 	}
 }
 
-func AddFirewallRule(Rule string) error {
+func ExecFirewallRule(Rule string) error {
 	args := strings.Split(Rule, " ")
 	cmd := exec.Command("ufw", args...)
 	err := cmd.Run()
