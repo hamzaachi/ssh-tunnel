@@ -27,7 +27,7 @@ func connect(ctx context.Context) (*sql.DB, error) {
 
 }
 
-func (con *Tunnel) Insert() error {
+func (con *Tunnel) Insert(ctx context.Context) error {
 
 	stm, err := con.db.Prepare("INSERT INTO channels(name, type, localport) VALUES(?,?,?)")
 	if err != nil {
@@ -45,7 +45,7 @@ func (con *Tunnel) Insert() error {
 	return nil
 }
 
-func (con *Tunnel) Delete(Name, Type string) error {
+func (con *Tunnel) Delete(ctx context.Context, Name, Type string) error {
 
 	stm, err := con.db.Prepare("DELETE FROM channels WHERE name = ? AND type = ?")
 	if err != nil {
@@ -63,7 +63,7 @@ func (con *Tunnel) Delete(Name, Type string) error {
 	return nil
 }
 
-func (con *Tunnel) RetrieveByID(Name, Type string) ([]Recod, error) {
+func (con *Tunnel) RetrieveByID(ctx context.Context, Name, Type string) ([]Recod, error) {
 	r := Recod{}
 
 	stm, err := con.db.Prepare("SELECT * FROM channels WHERE name = ? AND type = ?")
@@ -82,7 +82,7 @@ func (con *Tunnel) RetrieveByID(Name, Type string) ([]Recod, error) {
 	return l, nil
 }
 
-func (con *Tunnel) RetrieveByName(name string) ([]Recod, error) {
+func (con *Tunnel) RetrieveByName(ctx context.Context, name string) ([]Recod, error) {
 
 	stm, err := con.db.Prepare("SELECT * FROM channels WHERE name = ?")
 	if err != nil {
@@ -110,7 +110,7 @@ func (con *Tunnel) RetrieveByName(name string) ([]Recod, error) {
 	return l, nil
 }
 
-func (con *Tunnel) List() ([]Recod, error) {
+func (con *Tunnel) List(ctx context.Context) ([]Recod, error) {
 
 	stm, err := con.db.Prepare("SELECT * FROM channels;")
 	if err != nil {
@@ -138,7 +138,7 @@ func (con *Tunnel) List() ([]Recod, error) {
 	return l, nil
 }
 
-func (con *Tunnel) GetPorts() ([]int, error) {
+func (con *Tunnel) GetPorts(ctx context.Context) ([]int, error) {
 
 	stm, err := con.db.Prepare("SELECT localport FROM channels;")
 	if err != nil {

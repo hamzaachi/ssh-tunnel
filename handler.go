@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -29,7 +30,7 @@ type Tunnel struct {
 	db        *sql.DB
 }
 
-func New(name string, app config.App, db *sql.DB) *Tunnel {
+func New(ctx context.Context, name string, app config.App, db *sql.DB) *Tunnel {
 	s := Tunnel{}
 	s.Name = name
 	s.SSHServer = app.Shh
@@ -51,7 +52,7 @@ func New(name string, app config.App, db *sql.DB) *Tunnel {
 	return &s
 }
 
-func (sshTunnel *Tunnel) GenerateSystemdService() error {
+func (sshTunnel *Tunnel) GenerateSystemdService(ctx context.Context) error {
 	Filename := "/etc/systemd/system/ssh-tunnel-" + sshTunnel.Name + "-" + sshTunnel.Category + ".service"
 	f, err := os.Create(Filename)
 	if err != nil {
@@ -66,7 +67,7 @@ func (sshTunnel *Tunnel) GenerateSystemdService() error {
 	return nil
 }
 
-func (sshTunnel *Tunnel) GenerateHAProxyBackend() error {
+func (sshTunnel *Tunnel) GenerateHAProxyBackend(ctx context.Context) error {
 	Filename := "/etc/haproxy/conf.d/" + sshTunnel.Name + ".cfg"
 	f, err := os.Create(Filename)
 	if err != nil {
@@ -81,8 +82,8 @@ func (sshTunnel *Tunnel) GenerateHAProxyBackend() error {
 	return nil
 }
 
-func (sshTunnel *Tunnel) StartSSHTunnel() error {
-	err := sshTunnel.GenerateSystemdService()
+func (sshTunnel *Tunnel) StartSSHTunnel(ctx context.Context) error {
+	err := sshTunnel.GenerateSystemdService(ctx)
 	if err != nil {
 		return err
 	}
@@ -103,8 +104,8 @@ func (sshTunnel *Tunnel) StartSSHTunnel() error {
 			return err
 		}
 
-		if sshTunnel.Category == "web" {
-			err := sshTunnel.GenerateHAProxyBackend()
+		if sshTunnel.Category == "app" {
+			err := sshTunnel.GenerateHAProxyBackend(ctx)
 			if err != nil {
 				return err
 			}
@@ -119,7 +120,7 @@ func (sshTunnel *Tunnel) StartSSHTunnel() error {
 		return errors.New("Something went wrong, cannot check port")
 	}
 
-	err = sshTunnel.Insert()
+	err = sshTunnel.Insert(ctx)
 	if err != nil {
 		return err
 	}
@@ -127,9 +128,9 @@ func (sshTunnel *Tunnel) StartSSHTunnel() error {
 	return nil
 }
 
-func (sshTunnel *Tunnel) StopSSHTunnel(Name, Type string) error {
+func (sshTunnel *Tunnel) StopSSHTunnel(ctx context.Context, Name, Type string) error {
 
-	tunnel, err := sshTunnel.RetrieveByID(Name, Type)
+	tunnel, err := sshTunnel.RetrieveByID(ctx, Name, Type)
 	if err != nil {
 		return err
 	}
@@ -160,7 +161,7 @@ func (sshTunnel *Tunnel) StopSSHTunnel(Name, Type string) error {
 		return err
 	}
 
-	err = sshTunnel.Delete(Name, Type)
+	err = sshTunnel.Delete(ctx, Name, Type)
 	if err != nil {
 		return err
 	}
