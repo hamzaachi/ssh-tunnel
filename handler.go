@@ -135,7 +135,7 @@ func (sshTunnel *Tunnel) StopSSHTunnel(ctx context.Context, Name, Type string) e
 		return err
 	}
 	if len(tunnel) == 0 {
-		log.Println("SSL Tunnel does not Exist!")
+		log.Println("SSH Tunnel :", Name, Type, ", does not Exist!")
 		return nil
 	}
 
@@ -148,8 +148,8 @@ func (sshTunnel *Tunnel) StopSSHTunnel(ctx context.Context, Name, Type string) e
 	//This Needs Improvements...
 	systemdService := "ssh-tunnel-" + Name + "-" + Type + ".service"
 	systemdServicePath := "/etc/systemd/system/" + systemdService
-	cmd := exec.Command("systemctl", "start", systemdService)
-	err = cmd.Run()
+	cmd := exec.Command("systemctl", "stop", systemdService)
+	_ = cmd.Run()
 	cmd = exec.Command("systemctl", "disable", systemdService)
 	err = cmd.Run()
 	if err != nil {
