@@ -1,4 +1,4 @@
-`ssh_tunneling` is `Golang` CLI for managing SSH Tunnels, mainly creation, deletion and listing existing ones.
+`ssh_tunneling` is `Golang` CLI for managing SSH Tunnels mainly creation, deletion and listing existing ones. And saving them into SQLITE DB for later queries.
 
 Usage of ssh_tunneling:
   
