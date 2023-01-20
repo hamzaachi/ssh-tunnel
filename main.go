@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
@@ -84,7 +83,7 @@ func Add(ctx context.Context, conf config.Applications, db *sql.DB) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(tunnel)
+
 		if len(tunnel) > 0 {
 			log.Println("SSH Tunnel Already Exist!, Skipping...")
 			continue
